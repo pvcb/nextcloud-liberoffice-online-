@@ -1,0 +1,73 @@
+version: '3.1'
+networks:
+  nextcloud:
+volumes:
+  nextcloud:
+  db:
+  libreoffice:
+services:
+  db:
+    image: mirror.pvcb.vn/postgres
+    environment:
+      POSTGRES_USER: nextcloud
+      POSTGRES_PASSWORD: nextcloud@123
+      POSTGRES_DB: nextcloud
+      PGDATA: /data/postgres
+    volumes:
+       - db:/data/postgres
+    ports:
+      - "5432:5432"
+    networks:
+      - nextcloud
+    restart: unless-stopped
+
+  nextcloud:
+    image: mirror.pvcb.vn/nextcloud:fpm
+    #restart: always
+    links:
+      - db
+    volumes:
+      - nextcloud:/var/www/html
+    environment:
+      - POSTGRES_DB=nextcloud
+      - POSTGRES_USER=nextcloud
+      - POSTGRES_PASSWORD=nextcloud@123
+      - POSTGRES_HOST=db
+      - NEXTCLOUD_ADMIN_USER=admin
+      - NEXTCLOUD_ADMIN_PASSWORD=admin@123
+      - NEXTCLOUD_TRUSTED_DOMAINS='10.0.152.230'
+    depends_on:
+      - db
+    networks:
+      - nextcloud
+
+  webapp:
+    #build: .
+    image: webapp:latest
+    #restart: always
+    ports:
+      - 8080:80
+    volumes:
+      - nextcloud:/var/www/html:ro
+    depends_on:
+      - nextcloud
+    networks:
+      - nextcloud
+  libreoffice:
+    image: mirror.pvcb.vn/libreoffice/online:master
+    environment:
+      domain: "10.0.152.230:8080"
+      username: admin
+      password: admin@123
+      extra_params: '--o:ssl.enable=false'
+      DONT_GEN_SSL_CERT: 1
+    volumes:
+      - libreoffice:/etc/loolwsd
+    cap_add:
+      - MKNOD
+    ports:
+      - "9980:9980"
+    restart:
+      unless-stopped
+    networks:
+      - nextcloud
