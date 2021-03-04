@@ -29,7 +29,7 @@ services:
     volumes:
       - nextcloud:/var/www/html
       - ./custom_apps:/var/www/html/custom_apps:rw
-      - ./config:/var/www/html/config
+    # - ./config:/var/www/html/config
     environment:
       - POSTGRES_DB=nextcloud
       - POSTGRES_USER=nextcloud
