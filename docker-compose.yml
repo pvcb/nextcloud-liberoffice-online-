@@ -22,14 +22,13 @@ services:
     restart: unless-stopped
 
   nextcloud:
-    image: nextcloud:fpm
+    image: nextcloud:20.0-fpm
     #restart: always
     links:
       - db
     volumes:
       - nextcloud:/var/www/html
-      - ./custom_apps:/var/www/html/custom_apps:rw
-    # - ./config:/var/www/html/config
+      #- ./custom_apps:/var/www/html/custom_apps:rw
     environment:
       - POSTGRES_DB=nextcloud
       - POSTGRES_USER=nextcloud
@@ -58,20 +57,3 @@ services:
       nextcloud:
         aliases:
             - webapp.local
-  #libreoffice:
-  #  image: libreoffice/online
-    #container_name: nextcloud-collab
-  #  networks:
-  #    - nextcloud
-  #  cap_add:
-  #   - MKNOD
-  #  ports:
-  #    - 9980:9980
-  #  environment:
-  #    - domain='webapp'
-  #    - username=admin
-  #    - password=admin@123
-  #    - extra_params='--o:ssl.enable=false'
-  #    - DONT_GEN_SSL_CERT=1
-  #  volumes:
-  #    - libreoffice:/etc/loolwsd
