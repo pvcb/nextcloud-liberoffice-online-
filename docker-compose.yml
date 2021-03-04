@@ -7,7 +7,7 @@ volumes:
   libreoffice:
 services:
   db:
-    image: mirror.pvcb.vn/postgres
+    image: postgres
     environment:
       POSTGRES_USER: nextcloud
       POSTGRES_PASSWORD: nextcloud@123
@@ -22,12 +22,14 @@ services:
     restart: unless-stopped
 
   nextcloud:
-    image: mirror.pvcb.vn/nextcloud:fpm
+    image: nextcloud:fpm
     #restart: always
     links:
       - db
     volumes:
       - nextcloud:/var/www/html
+      - ./custom_apps:/var/www/html/custom_apps:rw
+      - ./config:/var/www/html/config
     environment:
       - POSTGRES_DB=nextcloud
       - POSTGRES_USER=nextcloud
@@ -42,32 +44,34 @@ services:
       - nextcloud
 
   webapp:
-    #build: .
+    build: .
     image: webapp:latest
+    hostname: webapp
     #restart: always
     ports:
       - 8080:80
     volumes:
       - nextcloud:/var/www/html:ro
-      - ./custom_apps:/var/www/html/custom_apps:rw
     depends_on:
       - nextcloud
     networks:
-      - nextcloud
-  libreoffice:
-    image: mirror.pvcb.vn/cibsoftware/libreoffice-online:6.2
+      nextcloud:
+        aliases:
+            - webapp.local
+  #libreoffice:
+  #  image: libreoffice/online
     #container_name: nextcloud-collab
-    networks:
-      - nextcloud
-    cap_add:
-     - MKNOD
-    ports:
-      - 9980:9980 
-    environment:
-      - domain='webapp'
-      - username=admin
-      - password=admin@123
-      - extra_params='--o:ssl.enable=false'
-      - DONT_GEN_SSL_CERT=1
-    volumes:
-      - libreoffice:/etc/loolwsd
+  #  networks:
+  #    - nextcloud
+  #  cap_add:
+  #   - MKNOD
+  #  ports:
+  #    - 9980:9980
+  #  environment:
+  #    - domain='webapp'
+  #    - username=admin
+  #    - password=admin@123
+  #    - extra_params='--o:ssl.enable=false'
+  #    - DONT_GEN_SSL_CERT=1
+  #  volumes:
+  #    - libreoffice:/etc/loolwsd
